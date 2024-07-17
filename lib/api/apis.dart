@@ -79,6 +79,12 @@ class APIs {
         .where('block', isEqualTo: false)
         .snapshots();
   }
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllBlockUsers(List<String> userIds) {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .where('block', isEqualTo: true)
+        .snapshots();
+  }
 
   static Future<void> blockUser(String userId) async {
     await FirebaseFirestore.instance

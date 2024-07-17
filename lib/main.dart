@@ -4,10 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:whisper/Screens/splash_Screen.dart';
-import 'package:whisper/api/push_notifications_api.dart';
 
-import 'Screens/Splash_two.dart';
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

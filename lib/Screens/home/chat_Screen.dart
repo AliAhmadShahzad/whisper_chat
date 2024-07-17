@@ -9,7 +9,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:whisper/Screens/home/messages_screen.dart';
-import 'package:whisper/api/push_notifications_api.dart';
 import 'package:whisper/helper/time_Formater.dart';
 
 import 'package:whisper/models/chat_messages.dart';
