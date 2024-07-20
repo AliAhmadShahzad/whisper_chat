@@ -14,7 +14,8 @@ import '../Colors/colors.dart';
 import '../api/apis.dart';
 import '../authentication/reCaptcha.dart';
 import '../messenger/messages.dart';
-import 'home/home_Screen.dart';
+import 'home/home_screen.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -45,8 +46,6 @@ class _LoginScreenState extends State<LoginScreen> {
       _signInWithGoogle().then((user) async {
         Navigator.pop(context);
         if (user != null) {
-          print("\nUser: ${user.user}");
-          print("\nUserInfo: ${user.additionalUserInfo}");
           if((await  APIs.userExists())){
             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> HomeScreen()));
           }
@@ -81,7 +80,6 @@ class _LoginScreenState extends State<LoginScreen> {
       // Once signed in, return the UserCredential
       return await FirebaseAuth.instance.signInWithCredential(credential);
     }catch(e){
-      print("\n Google sign in ${e}");
       Messages.showSnackbar(context, "Something went Wrong during Google sign in");
       return null;
     };

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:whisper/Screens/home/home_Screen.dart';
 import 'package:whisper/Screens/theme_reaction/themes_screen.dart';
 import 'package:whisper/Screens/theme_reaction/word_effect.dart';
 import 'package:whisper/helper/time_Formater.dart';
@@ -415,7 +416,7 @@ class _OtherUserProfileScreenState extends State<OtherUserProfileScreen> {
                   SizedBox(height: 20.h,),
                   GestureDetector(
                     onTap: (){
-                      Navigator.pop(context);
+                      // Navigator.pop(context);
                       _showBlockDialog();
                     },
                     child: Row(
@@ -548,6 +549,8 @@ be forwarded to Whisper.''',
           MaterialButton(
             onPressed: () {
               Navigator.pop(context);
+              Navigator.pop(context);
+              Navigator.pop(context);
             },
             child: Text(
               'Cancel',
@@ -562,9 +565,12 @@ be forwarded to Whisper.''',
           ),
           MaterialButton(
             onPressed: () {
-              // Implement your block logic here
-              Navigator.pop(context);
-              APIs.blockUser(widget.user.id).then((onValue)=>Messages.showSnackbar(context,'Blocked Successfully'));
+              APIs.blockUser(widget.user.id,widget.user.name,widget.user.image,widget.user.email).then((onValue){
+                Navigator.pop(context);
+                Navigator.pop(context);
+                Navigator.pop(context);
+                Messages.showSnackbar(context, 'Blocked Successfully');
+              });
             },
             child: Text(
               'Block',

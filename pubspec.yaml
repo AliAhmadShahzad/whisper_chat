@@ -54,6 +54,7 @@ dependencies:
   googleapis_auth:
   provider: ^6.1.2
   flutter_local_notifications: ^17.2.1+2
+  firebase_performance:
 
 
 dev_dependencies:

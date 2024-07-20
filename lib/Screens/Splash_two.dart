@@ -84,13 +84,11 @@ class _SplashTwoScreenState extends State<SplashTwoScreen> with SingleTickerProv
       _signInWithGoogle().then((user) async {
         Navigator.pop(context);
         if (user != null) {
-          print("\nUser: ${user.user}");
-          print("\nUserInfo: ${user.additionalUserInfo}");
           if((await  APIs.userExists())){
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> HomeScreen()));
         }
         else{
-        await APIs.createUser().then((onValue)=>print('User Created Successfully'));
+        await APIs.createUser();
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> HomeScreen()));
         }
         }

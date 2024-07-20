@@ -110,7 +110,7 @@ class _WordEffectState extends State<WordEffect> {
                           itemCount: list?.length,
                           shrinkWrap: true,
                           itemBuilder: (context, index) {
-                            print(' list contain: $list');
+
                             return AddingEffects(message: list![index]);
                           },
                         );

@@ -204,7 +204,6 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
   _otherMessages() {
     if (widget.messages.read.isEmpty) {
       APIs.updateMessageStatus(widget.messages);
-      print('read Successfully');
     }
     return Stack(
       children: [
@@ -414,7 +413,6 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
                 IconButton(
                     onPressed: (){
                       if(APIs.users.uid==widget.messages.fromid) {
-                        print('pinning message....');
                         APIs.pinMessage(widget.messages.toid, widget.messages.msg)
                             .then((onValue) =>
                             Messages.showSnackbar(
@@ -422,7 +420,6 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
                         Navigator.pop(context);
                       }
                       else{
-                        print('pinning message2....');
                         APIs.pinMessage(widget.messages.fromid, widget.messages.msg)
                             .then((onValue) =>
                             Messages.showSnackbar(

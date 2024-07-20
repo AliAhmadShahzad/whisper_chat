@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -6,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:whisper/messenger/messages.dart';
+import 'package:whisper/models/block_user.dart';
 import 'package:whisper/models/chat_messages.dart';
 import 'package:whisper/models/chat_user_model.dart';
 import 'package:whisper/models/pin_messages.dart';
@@ -62,9 +64,9 @@ class APIs {
       isOnline: false,
       id: users.uid,
       lastActive: time,
-      email: users.email.toString(),
+      email: users.email.toString().toLowerCase(),
       pushToken: users.phoneNumber.toString(),
-      block: false,
+
     );
 
     return await FirebaseFirestore.instance
@@ -73,31 +75,53 @@ class APIs {
         .set(chatuser.toJson()).then((onValue)=> print('user created successfully'));
   }
 
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUnBlockUsers(List<String> userIds) {
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUnBlockUsers(
+      List<String> userIds) {
+    log('\nUserIds: $userIds');
+
     return FirebaseFirestore.instance
         .collection('users')
-        .where('block', isEqualTo: false)
-        .snapshots();
-  }
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllBlockUsers(List<String> userIds) {
-    return FirebaseFirestore.instance
-        .collection('users')
-        .where('block', isEqualTo: true)
+        .where('id',
+        whereIn: userIds.isEmpty
+            ? ['']
+            : userIds) //because empty list throws an error
+    // .where('id', isNotEqualTo: user.uid)
         .snapshots();
   }
 
-  static Future<void> blockUser(String userId) async {
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getMyUserId() {
+    return FirebaseFirestore.instance
+        .collection('users')
+            .doc(users.uid)
+            .collection('my_users')
+        // .where('block', isEqualTo: false)
+            .snapshots();
+  }
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllBlockUsers() {
+
+    return FirebaseFirestore.instance
+        .collection('users').doc(users.uid).collection('my_users')
+        .where('block', isEqualTo: true )
+        .snapshots();
+  }
+
+  static Future<void> blockUser(String userId,String username,String userImg,String userEmail) async {
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(userId)
-        .update({'blocked': true});
+        .doc(users.uid).collection('my_users').doc(userId)
+        .update({
+      'block': true,
+
+    });
   }
 
   static Future<void> unblockUser(String userId) async {
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(userId)
-        .update({'blocked': false});
+        .doc(users.uid).collection('my_users').doc(userId)
+        .update({
+      'block': false,
+    });
   }
 
   static Future<void> updateUserInfo() async {
@@ -158,7 +182,6 @@ class APIs {
       // Verify the stored document
       DocumentSnapshot document = await docRef.get();
     } catch (e) {
-      print("Error sending message: $e");
     }
   }
 
@@ -209,7 +232,6 @@ class APIs {
     await messaging.getToken().then((token) {
       if (token != null) {
         userData.pushToken = token;
-        print("push Token: $token");
       }
     });
   }
@@ -232,20 +254,25 @@ class APIs {
   }
 
   static Future<bool> addChatUser(String email) async {
-    print("data: ${users}");
+
     final data = await FirebaseFirestore.instance
         .collection('users')
-        .where('email', isEqualTo: email)
+        .where('email', isEqualTo: email.toLowerCase().replaceAll(' ', ''))
         .get();
     print('data is:  $data');
     if (data.docs.isNotEmpty) {
-      print("Inside If condition ");
       await FirebaseFirestore.instance
           .collection('users')
           .doc(users.uid)
           .collection('my_users')
           .doc(data.docs.first.id)
-          .set({}).then((onValue) => print('Successfully Added'));
+          .set({
+        'block': false,
+        'id': '',
+        'name':'',
+        'image': '',
+
+      }).then((onValue) => print('Successfully Added'));
 
       return true;
     } else {
@@ -253,13 +280,7 @@ class APIs {
     }
   }
 
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getMyUserId() {
-    return FirebaseFirestore.instance
-        .collection('users')
-        .doc(users.uid)
-        .collection('my_users')
-        .snapshots();
-  }
+
 
   static Future<void> sendmessageToNewUserFirstTime(ChatUserModel chatUser, String message, Type type) async {
     // Adding the new user
@@ -307,9 +328,7 @@ class APIs {
           SetOptions(
               merge:
                   false), // Merge option ensures the document is updated or created
-        )
-        .then((value) => print("emoji added successfully"))
-        .catchError((onError) => print("Error adding emoji: $onError"));
+        );
   }
 
   static Future<void> updateEmoji(ChatUserModel chatUser, String emoji) async {
@@ -322,9 +341,7 @@ class APIs {
           SetOptions(
               merge:
                   true), // Merge option ensures the document is updated or created
-        )
-        .then((value) => print("emoji added successfully"))
-        .catchError((onError) => print("Error adding emoji: $onError"));
+        );
   }
 
   static Future<void> updateTheme(ChatUserModel chatUser, String theme) async {
@@ -341,9 +358,7 @@ class APIs {
           SetOptions(
               merge:
                   true), // Merge option ensures the document is updated or created
-        )
-        .then((value) => print("Theme added successfully"))
-        .catchError((onError) => print("Error adding theme: $onError"));
+        );
   }
 
   static Future<void> deleteChat(ChatUserModel chatUser) async {
@@ -354,11 +369,7 @@ class APIs {
     final myUsersDocRef = userDocRef.collection('my_users').doc(chatUser.id);
 
     // Delete the user document from the 'my_users' subcollection
-    await myUsersDocRef.delete().then((_) {
-      print('User document deleted successfully');
-    }).catchError((error) {
-      print('Error deleting user document: $error');
-    });
+    await myUsersDocRef.delete();
 
     // Delete the chat messages associated with the user
     final messagesCollectionRef = FirebaseFirestore.instance
@@ -368,11 +379,7 @@ class APIs {
     final messagesSnapshot = await messagesCollectionRef.get();
 
     for (final messageDoc in messagesSnapshot.docs) {
-      await messageDoc.reference.delete().then((_) {
-        print('Chat message deleted successfully');
-      }).catchError((error) {
-        print('Error deleting chat message: $error');
-      });
+      await messageDoc.reference.delete();
     }
   }
 
@@ -430,8 +437,7 @@ class APIs {
 try {
   await FirebaseFirestore.instance
       .collection('chats')
-      .doc(chatId).collection('pin_messages').add(pinMessages.toJson()).then((
-      onValue) => print('added messaged to pinned'));
+      .doc(chatId).collection('pin_messages').add(pinMessages.toJson());
 }catch(e){
   print('error is: $e');
 }

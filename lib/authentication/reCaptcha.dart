@@ -12,7 +12,6 @@ class ReCaptcha {
         phoneNumber: '+923090022121', // Provide a dummy phone number since it's not used
         verificationCompleted: (PhoneAuthCredential credential) {},
         verificationFailed: (FirebaseAuthException e) {
-          print('reCAPTCHA verification failed: $e');
         },
         codeSent: (String verificationId, int? resendToken) {},
         codeAutoRetrievalTimeout: (String verificationId) {},

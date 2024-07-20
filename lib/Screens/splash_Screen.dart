@@ -25,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Future.delayed(Duration(milliseconds: 2000), () {
 
       if(FirebaseAuth.instance.currentUser != null){
-        print("\nUser: ${FirebaseAuth.instance.currentUser}");
+
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> HomeScreen()));
 
       }else{

@@ -26,10 +26,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _formKey = GlobalKey<FormState>();
-  List<ChatUserModel> list = [];
+  late List<ChatUserModel> list = [];
   final List<ChatUserModel> _search = [];
   static bool _isSearching = false;
   String? _image;
+  bool _isLoading = true;
   int _selectedIndex = 0; // Index for selected bottom navigation tab
   @override
   void initState() {
@@ -61,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onTabTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      _isLoading = false;
     });
   }
 
@@ -197,36 +199,43 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                           }
                           return StreamBuilder(
-                            stream: APIs.getAllUnBlockUsers(userIds),
+                            stream: APIs.getAllUnBlockUsers(snapshot.data?.docs.map((e) => e.id).toList() ?? []),
                             builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return Center(child: CircularProgressIndicator(strokeWidth: 2));
-                              }
-                              if (snapshot.hasError) {
-                                return Center(child: Text("Error: ${snapshot.error}"));
-                              } else if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-                                var list = snapshot.data!.docs.map((doc) => ChatUserModel.fromJson(doc.data())).toList();
-                                return ListView.builder(
-                                  shrinkWrap: true,
-                                  padding: EdgeInsets.only(top: 20.h),
-                                  itemCount: list.length,
-                                  physics: BouncingScrollPhysics(),
-                                  itemBuilder: (context, index) {
-                                    return ChatHome(user: list[index]);
-                                  },
-                                );
-                              } else {
-                                return Center(
-                                  child: Text(
-                                    "No Connection Found",
-                                    style: GoogleFonts.roboto(
-                                      textStyle: TextStyle(
-                                        fontSize: 18.sp,
-                                        color: colors.textColor2,
-                                      ),
-                                    ),
-                                  ),
-                                );
+                              switch (snapshot.connectionState) {
+                              //if data is loading
+                                case ConnectionState.waiting:
+                                case ConnectionState.none:
+                                return const Center(
+                                    child: CircularProgressIndicator());
+
+                                //if some or all data is loaded then show it
+                                case ConnectionState.active:
+                                case ConnectionState.done:
+                                  final data = snapshot.data?.docs;
+                                  list = data
+                                      ?.map((e) => ChatUserModel.fromJson(e.data()))
+                                      .toList() ??
+                                      [];
+
+                                  if (list.isNotEmpty) {
+                                    return ListView.builder(
+                                        itemCount: _isSearching
+                                            ? _search.length
+                                            : list.length,
+                                        padding: EdgeInsets.only(top: 10),
+                                        physics: const BouncingScrollPhysics(),
+                                        itemBuilder: (context, index) {
+                                          return ChatHome(
+                                              user: _isSearching
+                                                  ? _search[index]
+                                                  :list[index]);
+                                        });
+                                  } else {
+                                    return const Center(
+                                      child: Text('No Connections Found!',
+                                          style: TextStyle(fontSize: 20)),
+                                    );
+                                  }
                               }
                             },
                           );
@@ -241,9 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _SettingScreen() {
-
-
-    return SingleChildScrollView(
+    return _isLoading? Center(child: CircularProgressIndicator(strokeWidth: 2,),): SingleChildScrollView(
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Container(

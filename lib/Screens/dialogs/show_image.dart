@@ -16,7 +16,7 @@ class ShowImage extends StatefulWidget {
 class _ShowImageState extends State<ShowImage> {
   @override
   Widget build(BuildContext context) {
-    print('entering');
+
     return
           CachedNetworkImage(
             imageUrl: widget.user.msg,

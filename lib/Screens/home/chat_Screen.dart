@@ -38,10 +38,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   bool _isUploading = false;
   bool _isTextPresent = false;
   bool _initializer = false;
-  late AnimationController _animationController;
-  late AnimationController _animationController1;
-  late List<_AnimatedEmoji> _emojis = [];
-  late List<_AnimatedEffect> _effect = [];
+  // late AnimationController _animationController;
+  // late AnimationController _animationController1;
+  // late List<_AnimatedEmoji> _emojis = [];
+  // late List<_AnimatedEffect> _effect = [];
   late String currentTheme;
   late String currentEmoji;
   late List<WordEffectModels> wordEffect = [];
@@ -59,8 +59,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-   // wordEffect =super.initState();  APIs.getWordEffects(widget.user) as List;
-   // print("getword effect list contain: $wordEffect");
 
     _initializeWordEffects();
     currentTheme = widget.theme;
@@ -69,7 +67,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     _fetchEmoji();
 
     if(!_initializer){
-      print('running initializer on user id: ${widget.user.id}');
+
       _initializeOnce();
       _initializer = true;
     }
@@ -78,20 +76,19 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         _isTextPresent = _textController.text.isNotEmpty;
       });
     });
-    _animationController = AnimationController(
-      duration: Duration(seconds: 5), // Set the duration to 5 seconds
-      vsync: this,
-    );
-    _animationController1 = AnimationController(
-      duration: Duration(seconds: 5), // Set the duration to 5 seconds
-      vsync: this,
-    );
+    // _animationController = AnimationController(
+    //   duration: Duration(seconds: 5), // Set the duration to 5 seconds
+    //   vsync: this,
+    // );
+    // _animationController1 = AnimationController(
+    //   duration: Duration(seconds: 5), // Set the duration to 5 seconds
+    //   vsync: this,
+    // );
   }
 
   Future<void> _initializeWordEffects() async {
-    print('Running Get Word effects');
+
     wordEffect = await APIs.getAllWordEffects(widget.user);
-    print('Word effects are $wordEffect');
   }
 
   Future<void> _initializeOnce() async {
@@ -114,35 +111,33 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   @override
   void dispose() {
     _textController.dispose();
-    _animationController.dispose();
-    _animationController1.dispose();
+    // _animationController.dispose();
+    // _animationController1.dispose();
 
     super.dispose();
   }
 
-  void _startEmojiAnimation(String emoji) {
-    _emojis = List.generate(40, (index) => _AnimatedEmoji(emoji: emoji, context: context));
-    _animationController.reset();
-    _animationController.forward();
-  }
-
-  void _startEffectAnimation(String effect) {
-    _effect = List.generate(50, (index) => _AnimatedEffect(effect: effect, context: context));
-    _animationController1.reset();
-    _animationController1.forward();
-  }
-
-  void _checkAndAnimateEffects(String text) {
-    print('Enter in _checkAndAnimateEffects method with text: $text');
-    for (var wordEffect in wordEffect) {
-      if (text.toLowerCase().contains(wordEffect.word.toLowerCase())) {
-        print('Matched word: ${wordEffect.word}');
-        _startEffectAnimation(wordEffect.effect);
-        return; // Exit loop after finding the first match
-      }
-    }
-    print('No matching word effect found.');
-  }
+  // void _startEmojiAnimation(String emoji) {
+  //   _emojis = List.generate(40, (index) => _AnimatedEmoji(emoji: emoji, context: context));
+  //   _animationController.reset();
+  //   _animationController.forward();
+  // }
+  //
+  // void _startEffectAnimation(String effect) {
+  //   _effect = List.generate(50, (index) => _AnimatedEffect(effect: effect, context: context));
+  //   _animationController1.reset();
+  //   _animationController1.forward();
+  // }
+  //
+  // void _checkAndAnimateEffects(String text) {
+  //   for (var wordEffect in wordEffect) {
+  //     if (text.toLowerCase().contains(wordEffect.word.toLowerCase())) {
+  //       _startEffectAnimation(wordEffect.effect);
+  //       return; // Exit loop after finding the first match
+  //     }
+  //   }
+  //
+  // }
 
 
   @override
@@ -267,8 +262,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     ],
                   ),
                 ),
-                _buildEmojiAnimation(),
-                _buildEffectAnimation()
+                // _buildEmojiAnimation(),
+                // _buildEffectAnimation()
               ],
             ),
           ),
@@ -359,7 +354,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   Widget _chatInput() {
-    print('updated emoji is: ${widget.emoji}');
+
     return Row(
       children: [
         Expanded(
@@ -386,9 +381,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         });
                       }
                     },
-                    onSubmitted: (text){
-                      _checkAndAnimateEffects(text);
-                    },
+                    // onSubmitted: (text){
+                    //   // _checkAndAnimateEffects(text);
+                    // },
                     keyboardType: TextInputType.multiline,
                     maxLines: null,
                     decoration: InputDecoration(
@@ -442,9 +437,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         MaterialButton(
           onPressed: () {
             if (_textController.text.isNotEmpty) {
-              print('entering TextController next is notification');
-              // PushNotificationsApi.sendNotificationToUser(widget.user.id);
-              print('entering TextController previous is notification.notification applied');
 
               if (_list.isEmpty) {
                 APIs.sendmessageToNewUserFirstTime(
@@ -456,9 +448,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   .trim()
                   .length == 2 &&
                   _textController.text.contains(emojiOnlyRegExp)) {
-                _startEmojiAnimation(_textController.text);
+                // _startEmojiAnimation(_textController.text);
               }
-              _checkAndAnimateEffects(_textController.text);
+              // _checkAndAnimateEffects(_textController.text);
 
               _textController.clear();
             } else if (widget.emoji.isNotEmpty) {
@@ -468,7 +460,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               } else {
                 APIs.sendMessages(widget.user, widget.emoji, Type.text);
               }
-              _startEmojiAnimation(widget.emoji);
+              // _startEmojiAnimation(widget.emoji);
               _textController.clear();
             }
           },
@@ -493,99 +485,99 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildEmojiAnimation() {
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        if (_animationController.isAnimating) {
-          return Stack(
-            children: _emojis
-                .map((emoji) => Positioned(
-              bottom: MediaQuery.of(context).size.height * _animationController.value +
-                  emoji.startPosition.dy * (1 - _animationController.value * 1), // Adjust the multiplier
-              left: emoji.startPosition.dx +
-                  emoji.startPosition.dx * (1 - _animationController.value * 1), // Adjust the multiplier
-              child: Transform.scale(
-                scale: emoji.size * (1 + _animationController.value * .5), // Adjust the multiplier
-                child: Text(
-                  '  ${emoji.emoji}  ', // Add spaces around the emoji
-                  style: TextStyle(fontSize: emoji.size * 15),
-                ),
-              ),
-            ))
-                .toList(),
-          );
-        } else {
-          return Container();
-        }
-      },
-    );
-  }
-
-  Widget _buildEffectAnimation() {
-    return AnimatedBuilder(
-      animation: _animationController1,
-      builder: (context, child) {
-        if (_animationController1.isAnimating) {
-          return Stack(
-            children: _effect
-                .map((effect) => Positioned(
-              bottom: MediaQuery.of(context).size.height * _animationController1.value +
-                  effect.startPosition.dy * (1 - _animationController1.value * 1), // Adjust the multiplier
-              left: effect.startPosition.dx +
-                  effect.startPosition.dx * (1 - _animationController1.value * 1), // Adjust the multiplier
-              child: Transform.scale(
-                scale: effect.size * (1 + _animationController1.value * .5), // Adjust the multiplier
-                child: Text(
-                  '  ${effect.effect}  ', // Add spaces around the emoji
-                  style: TextStyle(fontSize: effect.size * 15),
-                ),
-              ),
-            ))
-                .toList(),
-          );
-        } else {
-          return Container();
-        }
-      },
-    );
-  }
+  // Widget _buildEmojiAnimation() {
+  //   return AnimatedBuilder(
+  //     animation: _animationController,
+  //     builder: (context, child) {
+  //       if (_animationController.isAnimating) {
+  //         return Stack(
+  //           children: _emojis
+  //               .map((emoji) => Positioned(
+  //             bottom: MediaQuery.of(context).size.height * _animationController.value +
+  //                 emoji.startPosition.dy * (1 - _animationController.value * 1), // Adjust the multiplier
+  //             left: emoji.startPosition.dx +
+  //                 emoji.startPosition.dx * (1 - _animationController.value * 1), // Adjust the multiplier
+  //             child: Transform.scale(
+  //               scale: emoji.size * (1 + _animationController.value * .5), // Adjust the multiplier
+  //               child: Text(
+  //                 '  ${emoji.emoji}  ', // Add spaces around the emoji
+  //                 style: TextStyle(fontSize: emoji.size * 15),
+  //               ),
+  //             ),
+  //           ))
+  //               .toList(),
+  //         );
+  //       } else {
+  //         return Container();
+  //       }
+  //     },
+  //   );
+  // }
+  //
+  // Widget _buildEffectAnimation() {
+  //   return AnimatedBuilder(
+  //     animation: _animationController1,
+  //     builder: (context, child) {
+  //       if (_animationController1.isAnimating) {
+  //         return Stack(
+  //           children: _effect
+  //               .map((effect) => Positioned(
+  //             bottom: MediaQuery.of(context).size.height * _animationController1.value +
+  //                 effect.startPosition.dy * (1 - _animationController1.value * 1), // Adjust the multiplier
+  //             left: effect.startPosition.dx +
+  //                 effect.startPosition.dx * (1 - _animationController1.value * 1), // Adjust the multiplier
+  //             child: Transform.scale(
+  //               scale: effect.size * (1 + _animationController1.value * .5), // Adjust the multiplier
+  //               child: Text(
+  //                 '  ${effect.effect}  ', // Add spaces around the emoji
+  //                 style: TextStyle(fontSize: effect.size * 15),
+  //               ),
+  //             ),
+  //           ))
+  //               .toList(),
+  //         );
+  //       } else {
+  //         return Container();
+  //       }
+  //     },
+  //   );
+  // }
 
 
 }
 
-class _AnimatedEmoji {
-  final String emoji;
-  final double size;
-  final Offset startPosition;
-  final BuildContext context;
-  final Duration animationDuration;
-
-  _AnimatedEmoji({
-    required this.emoji,
-    required this.context,
-    this.animationDuration = const Duration(seconds: 4), // Adjust the duration here
-  })  : size = Random().nextDouble() * 1.5 + 0.5, // Random size between 0.5 and 2.0
-        startPosition = Offset(
-          Random().nextDouble() * 400, // Random horizontal start position
-          -Random().nextDouble() * 100, // Start from just off-screen top
-        );
-}
-
-class _AnimatedEffect {
-  final String effect;
-  final double size;
-  final Offset startPosition;
-  final BuildContext context;
-  final Duration animationDuration;
-
-  _AnimatedEffect({
-    required this.effect,
-    required this.context,
-    this.animationDuration = const Duration(seconds: 4), // Adjust the duration here
-  })  : size = Random().nextDouble() * 1.5 + 0.5, // Random size between 0.5 and 2.0
-        startPosition = Offset(
-          Random().nextDouble() * 400, // Random horizontal start position
-          -Random().nextDouble() * 100, // Start from just off-screen top
-        );
-}
+// class _AnimatedEmoji {
+//   final String emoji;
+//   final double size;
+//   final Offset startPosition;
+//   final BuildContext context;
+//   final Duration animationDuration;
+//
+//   _AnimatedEmoji({
+//     required this.emoji,
+//     required this.context,
+//     this.animationDuration = const Duration(seconds: 4), // Adjust the duration here
+//   })  : size = Random().nextDouble() * 1.5 + 0.5, // Random size between 0.5 and 2.0
+//         startPosition = Offset(
+//           Random().nextDouble() * 400, // Random horizontal start position
+//           -Random().nextDouble() * 100, // Start from just off-screen top
+//         );
+// }
+//
+// class _AnimatedEffect {
+//   final String effect;
+//   final double size;
+//   final Offset startPosition;
+//   final BuildContext context;
+//   final Duration animationDuration;
+//
+//   _AnimatedEffect({
+//     required this.effect,
+//     required this.context,
+//     this.animationDuration = const Duration(seconds: 4), // Adjust the duration here
+//   })  : size = Random().nextDouble() * 1.5 + 0.5, // Random size between 0.5 and 2.0
+//         startPosition = Offset(
+//           Random().nextDouble() * 400, // Random horizontal start position
+//           -Random().nextDouble() * 100, // Start from just off-screen top
+//         );
+// }
