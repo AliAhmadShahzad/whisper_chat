@@ -117,23 +117,20 @@ class _BlockedContactState extends State<BlockedContact> {
                       return GestureDetector(
                         onTap: (){
                           showDialog(context: context, builder: (context)=>AlertDialog(
-                            actions: [
-                              MaterialButton(
-                                onPressed: (){
-                                  Navigator.pop(context);
-                                  APIs.unblockUser(list[index].id);
-                              },
-                                padding: EdgeInsets.only(top: 24.h),
-                              child: Text('Unblock ${list[index].name}',style: GoogleFonts.roboto(
-                                textStyle: TextStyle(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: colors.textColor2,
-                                ),
-                              ),),
+                          title: MaterialButton(
+                            onPressed: (){
+                              Navigator.pop(context);
+                              APIs.unblockUser(list[index].id);
+                            },
+                            // padding: EdgeInsets.only(top: 24.h),
+                            child: Text('Unblock ${list[index].name}',style: GoogleFonts.roboto(
+                              textStyle: TextStyle(
+                                fontSize: 17.sp,
+                                fontWeight: FontWeight.bold,
+                                color: colors.textColor2,
                               ),
-
-                            ]
+                            ),),
+                          ),
                           ));
                         },
                         child: ListTile(

@@ -5,14 +5,16 @@ class PinMessagesModels{
   PinMessagesModels({
     required this.message,
     required this.time,
+    required this.id,
 
   });
   late  String message;
   late  String time;
+  late  String id;
 
   factory PinMessagesModels.fromJson(Map<String,dynamic> json){
     return PinMessagesModels(
-      message: json['message']??'', time: json['time']??'',
+      message: json['message']??'', time: json['time']??'',id: json['id']??''
     );
 
   }
@@ -21,6 +23,7 @@ class PinMessagesModels{
     final data = <String,dynamic> {};
     data['message'] = message;
     data['time'] = time;
+    data['id'] = id;
 
     return data;
   }

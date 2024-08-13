@@ -12,9 +12,12 @@ import 'package:whisper/models/chat_user_model.dart';
 
 import '../../Colors/colors.dart';
 import '../../api/apis.dart';
+import '../../models/chat_messages.dart';
+import '../theme_reaction/NickName_screen.dart';
 import '../theme_reaction/all_media_files.dart';
 import '../theme_reaction/emojis.dart';
 import '../theme_reaction/pin_messages.dart';
+import '../theme_reaction/save_photo_video.dart';
 
 class OtherUserProfileScreen extends StatefulWidget {
   const OtherUserProfileScreen({super.key, required this.user});
@@ -26,10 +29,72 @@ class OtherUserProfileScreen extends StatefulWidget {
 
 class _OtherUserProfileScreenState extends State<OtherUserProfileScreen> {
   bool _checkBlockbox = false;
+  List<MessagesModel> allMessages = []; // Replace with your message model
+  List<MessagesModel> filteredMessages = [];
+  String searchQuery = '';
+  bool isSearching = false;
+
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMessages(); // Load messages from your data source
+  }
+
+  void _loadMessages() {
+    // Load your messages here and set allMessages
+    // For example:
+    // allMessages = await APIs.getMessages(widget.user.id);
+    filteredMessages = allMessages; // Initially show all messages
+  }
+
+  void _filterMessages(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        filteredMessages = allMessages;
+      });
+    } else {
+      setState(() {
+        filteredMessages = allMessages
+            .where((message) =>
+            message.msg.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: isSearching
+            ? TextField(
+          onChanged: _filterMessages,
+          decoration: InputDecoration(
+            hintText: 'Search in chat...',
+            border: InputBorder.none,
+            hintStyle: TextStyle(color: Colors.white54),
+          ),
+          style: TextStyle(color: Colors.white),
+        )
+            : Text(widget.user.name), // Display user name if not searching
+        actions: [
+          IconButton(
+            icon: Icon(isSearching ? Icons.close : Icons.search),
+            onPressed: () {
+              setState(() {
+                if (isSearching) {
+                  isSearching = false;
+                  searchQuery = ''; // Clear search query
+                  filteredMessages = allMessages; // Show all messages
+                } else {
+                  isSearching = true;
+                }
+              });
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,23 +279,28 @@ class _OtherUserProfileScreenState extends State<OtherUserProfileScreen> {
                     ),
                   ),
                   SizedBox(height: 20.h,),
-                  Row(
-                    children: [
-                      Text('Aa',style: GoogleFonts.roboto(
-                        textStyle: TextStyle(
-                          fontSize: 25.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepOrange,
-                        ),
-                      ),),
-                      SizedBox(width: 15.w),
-                      Text('Nicknames',style: GoogleFonts.roboto(
-                        textStyle: TextStyle(
-                          fontSize: 20.sp,
-                          color: colors.containerColor2,
-                        ),
-                      ),),
-                    ],
+                  GestureDetector(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>NicknameScreen(user: widget.user,)));
+                    },
+                    child: Row(
+                      children: [
+                        Text('Aa',style: GoogleFonts.roboto(
+                          textStyle: TextStyle(
+                            fontSize: 25.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepOrange,
+                          ),
+                        ),),
+                        SizedBox(width: 15.w),
+                        Text('Nicknames',style: GoogleFonts.roboto(
+                          textStyle: TextStyle(
+                            fontSize: 20.sp,
+                            color: colors.containerColor2,
+                          ),
+                        ),),
+                      ],
+                    ),
                   ),
                   SizedBox(height: 20.h,),
                   GestureDetector(
@@ -303,7 +373,7 @@ class _OtherUserProfileScreenState extends State<OtherUserProfileScreen> {
                   SizedBox(height: 20.h,),
                   GestureDetector(
                     onTap: (){
-
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> savePhotoVideo(chatUser: widget.user,)));
                     },
                     child: Row(
                       children: [
@@ -350,6 +420,7 @@ class _OtherUserProfileScreenState extends State<OtherUserProfileScreen> {
                   SizedBox(height: 20.h,),
                   GestureDetector(
                     onTap: (){
+
                     },
                     child: Row(
                       children: [

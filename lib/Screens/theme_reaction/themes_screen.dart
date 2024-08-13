@@ -25,6 +25,11 @@ class _ThemesScreenState extends State<ThemesScreen> {
     'assets/theme4.png',
     'assets/theme5.png',
     'assets/theme6.png',
+    'assets/image7.png',
+    'assets/image8.png',
+    'assets/image9.png',
+    'assets/image10.png',
+
   ];
   List imageTitle = [
     'Default Theme',
@@ -34,6 +39,10 @@ class _ThemesScreenState extends State<ThemesScreen> {
     'Theme 4',
     'Theme 5',
     'Theme 6',
+    'Theme 7',
+    'Theme 8',
+    'Theme 9',
+    'Theme 10',
   ];
 
   @override

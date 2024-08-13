@@ -19,51 +19,51 @@ class GetMediaImages extends StatefulWidget {
 class _GetMediaImagesState extends State<GetMediaImages> {
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<String>>(
-      future: APIs.getMediaImages(widget.chatUser), // Fetch images
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator()); // Loading
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}')); // Error
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No images found.')); // No images
-        }
-        final imageUrls = snapshot.data!;
-        return SafeArea(
-          top: true,
-          minimum: EdgeInsets.only(top: 34.h),
-          child: GestureDetector(
-            onTap: (){
-              FocusScope.of(context).unfocus();
-            },
-            child: Scaffold(
-              appBar: AppBar(
-                title: Text(
-                  'View Media & Files',
-                  style: GoogleFonts.roboto(
-                    textStyle: TextStyle(
-                      fontSize: 22.sp,
-                      fontWeight: FontWeight.bold,
-                      color: colors.containerColor1,
-                    ),
-                  ),
-                ),
-                centerTitle: true,
-                leading: IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: Icon(Icons.arrow_back),
+    return SafeArea(
+        top: true,
+        minimum: EdgeInsets.only(top: 34.h),
+      child: GestureDetector(
+        onTap: (){
+          FocusScope.of(context).unfocus();
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(
+              'View Media & Files',
+              style: GoogleFonts.roboto(
+                textStyle: TextStyle(
+                  fontSize: 22.sp,
+                  fontWeight: FontWeight.bold,
+                  color: colors.containerColor1,
                 ),
               ),
-              body: GridView.builder(
+            ),
+            centerTitle: true,
+            leading: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(Icons.arrow_back),
+            ),
+          ),
+          body: FutureBuilder<List<String>>(
+            future: APIs.getMediaImages(widget.chatUser), // Fetch images
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator()); // Loading
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}')); // Error
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('No images found.')); // No images
+              }
+              final imageUrls = snapshot.data!;
+              return GridView.builder(
                 shrinkWrap: true,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3, // Adjust for your layout
-                    childAspectRatio: 0.7, // Adjusted aspect ratio
-                    crossAxisSpacing: 4.0, // Add spacing if desired
-                    mainAxisSpacing: 4.0, // Square images
+                  crossAxisCount: 3, // Adjust for your layout
+                  childAspectRatio: 0.7, // Adjusted aspect ratio
+                  crossAxisSpacing: 4.0, // Add spacing if desired
+                  mainAxisSpacing: 4.0, // Square images
                 ),
                 itemCount: imageUrls.length,
                 itemBuilder: (context, index) {
@@ -76,11 +76,11 @@ class _GetMediaImagesState extends State<GetMediaImages> {
                     ),
                   );
                 },
-              ),
-            ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

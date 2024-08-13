@@ -3,7 +3,11 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,7 +29,11 @@ class ChatScreen extends StatefulWidget {
   final ChatUserModel user;
   final String theme;
   final String emoji;
-  const ChatScreen({super.key, required this.user, required this.theme, required this.emoji});
+  const ChatScreen(
+      {super.key,
+      required this.user,
+      required this.theme,
+      required this.emoji});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -38,10 +46,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   bool _isUploading = false;
   bool _isTextPresent = false;
   bool _initializer = false;
-  // late AnimationController _animationController;
-  // late AnimationController _animationController1;
-  // late List<_AnimatedEmoji> _emojis = [];
-  // late List<_AnimatedEffect> _effect = [];
+  late AnimationController _animationController;
+  late AnimationController _animationController1;
+  late List<_AnimatedEmoji> _emojis = [];
+  late List<_AnimatedEffect> _effect = [];
   late String currentTheme;
   late String currentEmoji;
   late List<WordEffectModels> wordEffect = [];
@@ -55,7 +63,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     unicode: true,
   );
 
-
   @override
   void initState() {
     super.initState();
@@ -66,8 +73,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     currentEmoji = widget.emoji;
     _fetchEmoji();
 
-    if(!_initializer){
-
+    if (!_initializer) {
       _initializeOnce();
       _initializer = true;
     }
@@ -76,31 +82,32 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         _isTextPresent = _textController.text.isNotEmpty;
       });
     });
-    // _animationController = AnimationController(
-    //   duration: Duration(seconds: 5), // Set the duration to 5 seconds
-    //   vsync: this,
-    // );
-    // _animationController1 = AnimationController(
-    //   duration: Duration(seconds: 5), // Set the duration to 5 seconds
-    //   vsync: this,
-    // );
+    _animationController = AnimationController(
+      duration: Duration(seconds: 5), // Set the duration to 5 seconds
+      vsync: this,
+    );
+    _animationController1 = AnimationController(
+      duration: Duration(seconds: 5), // Set the duration to 5 seconds
+      vsync: this,
+    );
   }
 
   Future<void> _initializeWordEffects() async {
-
     wordEffect = await APIs.getAllWordEffects(widget.user);
   }
 
   Future<void> _initializeOnce() async {
-     await APIs.setEmojiTheme(widget.user,currentEmoji,currentTheme);
+    await APIs.setEmojiTheme(widget.user, currentEmoji, currentTheme);
     // Example: Fetch data, set up listeners, etc.
   }
+
   Future<void> _fetchTheme() async {
     String fetchedTheme = await APIs.getTheme(widget.user);
     setState(() {
       currentTheme = fetchedTheme;
     });
   }
+
   Future<void> _fetchEmoji() async {
     String fetchedEmoji = await APIs.getEmoji(widget.user);
     setState(() {
@@ -111,34 +118,38 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   @override
   void dispose() {
     _textController.dispose();
-    // _animationController.dispose();
-    // _animationController1.dispose();
+    _animationController.dispose();
+    _animationController1.dispose();
 
     super.dispose();
   }
 
-  // void _startEmojiAnimation(String emoji) {
-  //   _emojis = List.generate(40, (index) => _AnimatedEmoji(emoji: emoji, context: context));
-  //   _animationController.reset();
-  //   _animationController.forward();
-  // }
-  //
-  // void _startEffectAnimation(String effect) {
-  //   _effect = List.generate(50, (index) => _AnimatedEffect(effect: effect, context: context));
-  //   _animationController1.reset();
-  //   _animationController1.forward();
-  // }
-  //
-  // void _checkAndAnimateEffects(String text) {
-  //   for (var wordEffect in wordEffect) {
-  //     if (text.toLowerCase().contains(wordEffect.word.toLowerCase())) {
-  //       _startEffectAnimation(wordEffect.effect);
-  //       return; // Exit loop after finding the first match
-  //     }
-  //   }
-  //
-  // }
+  void _startEmojiAnimation(String emoji) {
+    _emojis = List.generate(
+        40, (index) => _AnimatedEmoji(emoji: emoji, context: context));
+    _animationController.reset();
+    _animationController.forward();
+  }
 
+  void _startEffectAnimation(String effect) {
+    _effect = List.generate(
+        50, (index) => _AnimatedEffect(effect: effect, context: context));
+    _animationController1.reset();
+    _animationController1.forward();
+  }
+
+  void _checkAndAnimateEffects(String text) {
+    print('in check and animate effect $text');
+    for (var wordEffect in wordEffect) {
+      print('word effect are: $wordEffect');
+      if (text.toLowerCase().contains(wordEffect.word.toLowerCase())) {
+        print('word effect are: $wordEffect');
+        _startEffectAnimation(wordEffect.effect);
+        return; // Exit loop after finding the first match
+      }
+      print('word effect are: $wordEffect');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -182,54 +193,55 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   ),
                 ),
                 GestureDetector(
-                  onTap: FocusScope
-                      .of(context)
-                      .unfocus,
+                  onTap: FocusScope.of(context).unfocus,
                   child: Column(
                     children: [
-                      Expanded (
+                      Expanded(
                         child: StreamBuilder(
-                          stream:  APIs.getAllMessages(widget.user),
+                          stream: APIs.getAllMessages(widget.user),
                           builder: (context, snapshot) {
-                            if (snapshot.hasError) {
-                              return Center(
-                                child: Text('Error: ${snapshot.error}'),
-                              );
-                            }
+                            switch (snapshot.connectionState) {
+                              //if data is loading
+                              case ConnectionState.waiting:
+                              case ConnectionState.none:
+                                return const SizedBox();
 
-                            if (!snapshot.hasData) {
-                              return Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
-
-                            final data = snapshot.data?.docs;
-                            _list = data
-                                ?.map(
-                                    (e) => MessagesModel.fromJson(e.data()))
-                                .toList() ??
-                                [];
-
-                            if (_list.isNotEmpty) {
-                              return ListView.builder(
-                                reverse: true,
-                                itemCount: _list.length,
-                                padding: EdgeInsets.only(top: 20.h),
-                                physics: const BouncingScrollPhysics(),
-                                itemBuilder: (context, index) {
-                                  return MessagesDisplayScreen(messages: _list[index], wordEffects: wordEffect,);
-                                },
-                              );
-                            } else {
-                              return Center(
-                                child: Text('Say Hii! 👋',
-                                  style: GoogleFonts.roboto(
-                                    textStyle: TextStyle(
-                                      fontSize: 20.sp,
-                                      color: colors.textColor2,
+                              //if some or all data is loaded then show it
+                              case ConnectionState.active:
+                              case ConnectionState.done:
+                                final data = snapshot.data?.docs;
+                                _list = data
+                                        ?.map((e) =>
+                                            MessagesModel.fromJson(e.data()))
+                                        .toList() ??
+                                    [];
+                                if (_list.isNotEmpty) {
+                                  return ListView.builder(
+                                    reverse: true,
+                                    itemCount: _list.length,
+                                    padding: EdgeInsets.only(top: 20.h),
+                                    physics: const BouncingScrollPhysics(),
+                                    itemBuilder: (context, index) {
+                                      return MessagesDisplayScreen(
+                                        messages: _list[index],
+                                        wordEffects: wordEffect,
+                                        theme: widget.theme
+                                      );
+                                    },
+                                  );
+                                } else {
+                                  return Center(
+                                    child: Text(
+                                      'Say Hii! 👋',
+                                      style: GoogleFonts.roboto(
+                                        textStyle: TextStyle(
+                                          fontSize: 20.sp,
+                                          color: colors.textColor2,
+                                        ),
+                                      ),
                                     ),
-                                  ),),
-                              );
+                                  );
+                                }
                             }
                           },
                         ),
@@ -251,19 +263,22 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                               height: 256,
                               emojiViewConfig: EmojiViewConfig(
                                 emojiSizeMax:
-                                28 * (Platform.isIOS ? 1.20 : 1.0),
+                                    28 * (Platform.isIOS ? 1.20 : 1.0),
                                 columns: 9,
                               ),
                               searchViewConfig: SearchViewConfig(
                                   backgroundColor: Colors.transparent),
-    bottomActionBarConfig: BottomActionBarConfig(buttonColor: Colors.white,backgroundColor: Colors.grey.shade200,buttonIconColor: Colors.deepOrangeAccent)),
+                              bottomActionBarConfig: BottomActionBarConfig(
+                                  buttonColor: Colors.white,
+                                  backgroundColor: Colors.grey.shade200,
+                                  buttonIconColor: Colors.deepOrangeAccent)),
                         ),
                       SizedBox(height: 10.h),
                     ],
                   ),
                 ),
-                // _buildEmojiAnimation(),
-                // _buildEffectAnimation()
+                _buildEmojiAnimation(),
+                _buildEffectAnimation()
               ],
             ),
           ),
@@ -279,8 +294,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         stream: APIs.getUserInfo(widget.user),
         builder: (context, snapshot) {
           final list = snapshot.data?.docs
-              .map((doc) => ChatUserModel.fromJson(doc.data()))
-              .toList() ??
+                  .map((doc) => ChatUserModel.fromJson(doc.data()))
+                  .toList() ??
               [];
 
           return Row(
@@ -290,7 +305,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   Navigator.pop(context);
                 },
                 icon:
-                Icon(Icons.arrow_back, size: 30, color: colors.textColor2),
+                    Icon(Icons.arrow_back, size: 30, color: colors.textColor2),
               ),
               ClipRRect(
                 borderRadius: BorderRadius.circular(30),
@@ -300,10 +315,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   width: 45.w,
                   imageUrl: list.isNotEmpty ? list[0].image : widget.user.image,
                   placeholder: (context, url) => CircularProgressIndicator(),
-                  errorWidget: (context, url, error) =>
-                      CircleAvatar(
-                        child: Icon(Icons.person),
-                      ),
+                  errorWidget: (context, url, error) => CircleAvatar(
+                    child: Icon(Icons.person),
+                  ),
                 ),
               ),
               SizedBox(width: 10.w),
@@ -325,13 +339,13 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     Text(
                       list.isNotEmpty
                           ? list[0].isOnline
-                          ? "Online"
+                              ? "Online"
+                              : FormatTime.getLastActiveTime(
+                                  context: context,
+                                  lastActive: list[0].lastActive)
                           : FormatTime.getLastActiveTime(
-                          context: context,
-                          lastActive: list[0].lastActive)
-                          : FormatTime.getLastActiveTime(
-                          context: context,
-                          lastActive: widget.user.lastActive),
+                              context: context,
+                              lastActive: widget.user.lastActive),
                       style: GoogleFonts.roboto(
                         textStyle: TextStyle(
                           fontSize: 17.sp,
@@ -354,7 +368,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   Widget _chatInput() {
-
     return Row(
       children: [
         Expanded(
@@ -389,7 +402,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     decoration: InputDecoration(
                       hintText: 'Type Something...',
                       hintStyle:
-                      TextStyle(color: colors.textColor2, fontSize: 15),
+                          TextStyle(color: colors.textColor2, fontSize: 15),
                       border: InputBorder.none,
                     ),
                   ),
@@ -398,7 +411,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                   onPressed: () async {
                     final ImagePicker picker = ImagePicker();
                     final List<XFile> images =
-                    await picker.pickMultiImage(limit: 5, imageQuality: 70);
+                        await picker.pickMultiImage(limit: 5, imageQuality: 70);
                     for (var i in images) {
                       setState(() {
                         _isUploading = true;
@@ -437,20 +450,17 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         MaterialButton(
           onPressed: () {
             if (_textController.text.isNotEmpty) {
-
               if (_list.isEmpty) {
                 APIs.sendmessageToNewUserFirstTime(
                     widget.user, _textController.text, Type.text);
               } else {
                 APIs.sendMessages(widget.user, _textController.text, Type.text);
               }
-              if (_textController.text
-                  .trim()
-                  .length == 2 &&
+              if (_textController.text.trim().length == 2 &&
                   _textController.text.contains(emojiOnlyRegExp)) {
-                // _startEmojiAnimation(_textController.text);
+                _startEmojiAnimation(_textController.text);
               }
-              // _checkAndAnimateEffects(_textController.text);
+              _checkAndAnimateEffects(_textController.text);
 
               _textController.clear();
             } else if (widget.emoji.isNotEmpty) {
@@ -460,124 +470,146 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               } else {
                 APIs.sendMessages(widget.user, widget.emoji, Type.text);
               }
-              // _startEmojiAnimation(widget.emoji);
+              _startEmojiAnimation(widget.emoji);
               _textController.clear();
             }
           },
           minWidth: 0,
           child: _isTextPresent
               ? Icon(
-            Icons.send,
-            color: colors.textColor2,
-            size: 30,
-          )
+                  Icons.send,
+                  color: colors.textColor2,
+                  size: 30,
+                )
               : Text(
-            currentEmoji,
-            style: GoogleFonts.roboto(
-              textStyle: TextStyle(
-                fontSize: 30.sp,
-                color: colors.containerColor2,
-              ),
-            ),
-          ),
+                  currentEmoji,
+                  style: GoogleFonts.roboto(
+                    textStyle: TextStyle(
+                      fontSize: 30.sp,
+                      color: colors.containerColor2,
+                    ),
+                  ),
+                ),
         ),
       ],
     );
   }
 
-  // Widget _buildEmojiAnimation() {
-  //   return AnimatedBuilder(
-  //     animation: _animationController,
-  //     builder: (context, child) {
-  //       if (_animationController.isAnimating) {
-  //         return Stack(
-  //           children: _emojis
-  //               .map((emoji) => Positioned(
-  //             bottom: MediaQuery.of(context).size.height * _animationController.value +
-  //                 emoji.startPosition.dy * (1 - _animationController.value * 1), // Adjust the multiplier
-  //             left: emoji.startPosition.dx +
-  //                 emoji.startPosition.dx * (1 - _animationController.value * 1), // Adjust the multiplier
-  //             child: Transform.scale(
-  //               scale: emoji.size * (1 + _animationController.value * .5), // Adjust the multiplier
-  //               child: Text(
-  //                 '  ${emoji.emoji}  ', // Add spaces around the emoji
-  //                 style: TextStyle(fontSize: emoji.size * 15),
-  //               ),
-  //             ),
-  //           ))
-  //               .toList(),
-  //         );
-  //       } else {
-  //         return Container();
-  //       }
-  //     },
-  //   );
-  // }
-  //
-  // Widget _buildEffectAnimation() {
-  //   return AnimatedBuilder(
-  //     animation: _animationController1,
-  //     builder: (context, child) {
-  //       if (_animationController1.isAnimating) {
-  //         return Stack(
-  //           children: _effect
-  //               .map((effect) => Positioned(
-  //             bottom: MediaQuery.of(context).size.height * _animationController1.value +
-  //                 effect.startPosition.dy * (1 - _animationController1.value * 1), // Adjust the multiplier
-  //             left: effect.startPosition.dx +
-  //                 effect.startPosition.dx * (1 - _animationController1.value * 1), // Adjust the multiplier
-  //             child: Transform.scale(
-  //               scale: effect.size * (1 + _animationController1.value * .5), // Adjust the multiplier
-  //               child: Text(
-  //                 '  ${effect.effect}  ', // Add spaces around the emoji
-  //                 style: TextStyle(fontSize: effect.size * 15),
-  //               ),
-  //             ),
-  //           ))
-  //               .toList(),
-  //         );
-  //       } else {
-  //         return Container();
-  //       }
-  //     },
-  //   );
-  // }
+  Widget _buildEmojiAnimation() {
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        if (_animationController.isAnimating) {
+          return Stack(
+            children: _emojis
+                .map((emoji) => Positioned(
+                      bottom: MediaQuery.of(context).size.height *
+                              _animationController.value +
+                          emoji.startPosition.dy *
+                              (1 -
+                                  _animationController.value *
+                                      1), // Adjust the multiplier
+                      left: emoji.startPosition.dx +
+                          emoji.startPosition.dx *
+                              (1 -
+                                  _animationController.value *
+                                      1), // Adjust the multiplier
+                      child: Transform.scale(
+                        scale: emoji.size *
+                            (1 +
+                                _animationController.value *
+                                    .5), // Adjust the multiplier
+                        child: Text(
+                          '  ${emoji.emoji}  ', // Add spaces around the emoji
+                          style: TextStyle(fontSize: emoji.size * 15),
+                        ),
+                      ),
+                    ))
+                .toList(),
+          );
+        } else {
+          return Container();
+        }
+      },
+    );
+  }
 
-
+  Widget _buildEffectAnimation() {
+    return AnimatedBuilder(
+      animation: _animationController1,
+      builder: (context, child) {
+        if (_animationController1.isAnimating) {
+          return Stack(
+            children: _effect
+                .map((effect) => Positioned(
+                      bottom: MediaQuery.of(context).size.height *
+                              _animationController1.value +
+                          effect.startPosition.dy *
+                              (1 -
+                                  _animationController1.value *
+                                      1), // Adjust the multiplier
+                      left: effect.startPosition.dx +
+                          effect.startPosition.dx *
+                              (1 -
+                                  _animationController1.value *
+                                      1), // Adjust the multiplier
+                      child: Transform.scale(
+                        scale: effect.size *
+                            (1 +
+                                _animationController1.value *
+                                    .5), // Adjust the multiplier
+                        child: Text(
+                          '  ${effect.effect}  ', // Add spaces around the emoji
+                          style: TextStyle(fontSize: effect.size * 15),
+                        ),
+                      ),
+                    ))
+                .toList(),
+          );
+        } else {
+          return Container();
+        }
+      },
+    );
+  }
 }
 
-// class _AnimatedEmoji {
-//   final String emoji;
-//   final double size;
-//   final Offset startPosition;
-//   final BuildContext context;
-//   final Duration animationDuration;
-//
-//   _AnimatedEmoji({
-//     required this.emoji,
-//     required this.context,
-//     this.animationDuration = const Duration(seconds: 4), // Adjust the duration here
-//   })  : size = Random().nextDouble() * 1.5 + 0.5, // Random size between 0.5 and 2.0
-//         startPosition = Offset(
-//           Random().nextDouble() * 400, // Random horizontal start position
-//           -Random().nextDouble() * 100, // Start from just off-screen top
-//         );
-// }
-//
-// class _AnimatedEffect {
-//   final String effect;
-//   final double size;
-//   final Offset startPosition;
-//   final BuildContext context;
-//   final Duration animationDuration;
-//
-//   _AnimatedEffect({
-//     required this.effect,
-//     required this.context,
-//     this.animationDuration = const Duration(seconds: 4), // Adjust the duration here
-//   })  : size = Random().nextDouble() * 1.5 + 0.5, // Random size between 0.5 and 2.0
-//         startPosition = Offset(
-//           Random().nextDouble() * 400, // Random horizontal start position
-//           -Random().nextDouble() * 100, // Start from just off-screen top
-//         );
-// }
+class _AnimatedEmoji {
+  final String emoji;
+  final double size;
+  final Offset startPosition;
+  final BuildContext context;
+  final Duration animationDuration;
+
+  _AnimatedEmoji({
+    required this.emoji,
+    required this.context,
+    this.animationDuration =
+        const Duration(seconds: 4), // Adjust the duration here
+  })  : size = Random().nextDouble() * 1.5 +
+            0.5, // Random size between 0.5 and 2.0
+        startPosition = Offset(
+          Random().nextDouble() * 400, // Random horizontal start position
+          -Random().nextDouble() * 100, // Start from just off-screen top
+        );
+}
+
+class _AnimatedEffect {
+  final String effect;
+  final double size;
+  final Offset startPosition;
+  final BuildContext context;
+  final Duration animationDuration;
+
+  _AnimatedEffect({
+    required this.effect,
+    required this.context,
+    this.animationDuration =
+        const Duration(seconds: 4), // Adjust the duration here
+  })  : size = Random().nextDouble() * 1.5 +
+            0.5, // Random size between 0.5 and 2.0
+        startPosition = Offset(
+          Random().nextDouble() * 400, // Random horizontal start position
+          -Random().nextDouble() * 100, // Start from just off-screen top
+        );
+}

@@ -80,22 +80,25 @@ class APIs {
     log('\nUserIds: $userIds');
 
     return FirebaseFirestore.instance
-        .collection('users')
-        .where('id',
+        .collection('users').doc(users.uid).collection('my_users')
+        .where('block',isEqualTo: false).where('id',
         whereIn: userIds.isEmpty
             ? ['']
-            : userIds) //because empty list throws an error
-    // .where('id', isNotEqualTo: user.uid)
+            : userIds)
         .snapshots();
   }
 
   static Stream<QuerySnapshot<Map<String, dynamic>>> getMyUserId() {
-    return FirebaseFirestore.instance
+
+    final data  =   FirebaseFirestore.instance
         .collection('users')
             .doc(users.uid)
             .collection('my_users')
         // .where('block', isEqualTo: false)
             .snapshots();
+
+    log('data is $data');
+    return data;
   }
   static Stream<QuerySnapshot<Map<String, dynamic>>> getAllBlockUsers() {
 
@@ -104,6 +107,31 @@ class APIs {
         .where('block', isEqualTo: true )
         .snapshots();
   }
+  static Future<List<Map<String, String>>> getChattingUsers(String chatUser) async {
+    DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(users.uid)
+        .collection('my_users')
+        .doc(chatUser)
+        .get();
+
+    // Debugging logs
+    print("Snapshot exists: ${snapshot.exists}");
+    print('user id:$chatUser');
+    print("Snapshot data: ${snapshot.data()}");
+
+    if (snapshot.exists) {
+      String name = snapshot.data()?['name'] ?? '';
+      String imageUrl = snapshot.data()?['imageUrl'] ?? ''; // Assuming your field is named 'imageUrl'
+      return [{'name': name, 'imageUrl': imageUrl}]; // Return a list of maps
+    } else {
+      print("Document does not exist.");
+      return []; // Return an empty list if no document exists
+    }
+  }
+
+
+
 
   static Future<void> blockUser(String userId,String username,String userImg,String userEmail) async {
     await FirebaseFirestore.instance
@@ -111,8 +139,27 @@ class APIs {
         .doc(users.uid).collection('my_users').doc(userId)
         .update({
       'block': true,
+      'id': userId,
+      'image': userImg,
+      'name': username,
+      'email': userEmail
 
     });
+  }
+
+  static Future<void> setNickName(String chatUser, String nickName)async{
+
+    print('My chat user $chatUser   with text $nickName');
+
+    String chatID = conversationID(chatUser);
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(users.uid)
+          .collection('my_users').doc(chatUser)
+          .update(
+          {'name': nickName});
+    }catch(e){
+      print('error in changing nickname is: $e');
+    }
   }
 
   static Future<void> unblockUser(String userId) async {
@@ -121,6 +168,7 @@ class APIs {
         .doc(users.uid).collection('my_users').doc(userId)
         .update({
       'block': false,
+
     });
   }
 
@@ -214,7 +262,7 @@ class APIs {
 
   static Stream<QuerySnapshot<Map<String, dynamic>>> getUserInfo(ChatUserModel chatuser) {
     return FirebaseFirestore.instance
-        .collection('users')
+        .collection('users').doc(users.uid).collection('my_users')
         .where('id', isEqualTo: chatuser.id)
         .snapshots();
   }
@@ -254,35 +302,43 @@ class APIs {
   }
 
   static Future<bool> addChatUser(String email) async {
-
     final data = await FirebaseFirestore.instance
         .collection('users')
         .where('email', isEqualTo: email.toLowerCase().replaceAll(' ', ''))
         .get();
-    print('data is:  $data');
+    log('data is $data');
+
     if (data.docs.isNotEmpty) {
+      final userDoc = data.docs.first;
+      final userData = userDoc.data();
+
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(users.uid)
+          .doc(users.uid)  // Ensure 'users.uid' is the correct user ID
           .collection('my_users')
-          .doc(data.docs.first.id)
+          .doc(userDoc.id)
           .set({
         'block': false,
-        'id': '',
-        'name':'',
-        'image': '',
-
-      }).then((onValue) => print('Successfully Added'));
-
+        'id': userDoc.id,
+        'name': userData['name'],
+        'image': userData['image'],
+        'email': userData['email'],
+        'last_active': userData['last_active'],
+        'last_message':userData['last_message'],
+        'is_online':userData['is_online'],
+        'created_at':userData['created_at'],
+        'push_token':userData['push_token'],
+          });
       return true;
     } else {
       return false;
     }
   }
 
-
-
   static Future<void> sendmessageToNewUserFirstTime(ChatUserModel chatUser, String message, Type type) async {
+
+    log('chat user id is: ${chatUser.id}');
+    log('my user id is: ${users.uid}');
     // Adding the new user
     await FirebaseFirestore.instance
         .collection('users')
@@ -431,9 +487,10 @@ class APIs {
   }
 
   static Future<void> pinMessage(String chatUser,String message)async{
-    final times = DateTime.now().millisecondsSinceEpoch.toString();
-    final pinMessages = PinMessagesModels(message: message, time: times);
     String chatId = conversationID(chatUser);
+    final times = DateTime.now().millisecondsSinceEpoch.toString();
+    final pinMessages = PinMessagesModels(message: message, time: times, id: chatId);
+
 try {
   await FirebaseFirestore.instance
       .collection('chats')
@@ -459,10 +516,25 @@ try {
       return PinMessagesModels(
         message: doc['message'] as String,
         time: doc['time'] as String,
+        id: doc['id'] as String,
       );
     }).toList();
 
     return pinMessages;
+  }
+  static Future<void> deletePinMessages(String chatUser,String message) async {
+    String chatId = conversationID(chatUser);
+    // Fetch the documents from Firestore
+    var collectionRef = await FirebaseFirestore.instance
+        .collection('chats')
+        .doc(chatId)
+        .collection('pin_messages');
+
+    // Map the documents to a list of PinMessage objects
+    var querySnapshot = await collectionRef.where('message', isEqualTo: message).get();
+    for (var doc in querySnapshot.docs) {
+      await collectionRef.doc(doc.id).delete();
+    }
   }
 
   static Future<List<String>> getMediaImages(ChatUserModel chatUser) async {

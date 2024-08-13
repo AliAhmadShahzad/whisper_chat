@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
@@ -55,7 +56,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _initializeUserData() async {
     await APIs.getselfInfo();
     setState(() {
-      list = [APIs.userData]; // Assuming userData should be part of the list initially
+      list = [
+        APIs.userData
+      ]; // Assuming userData should be part of the list initially
     });
   }
 
@@ -158,11 +161,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                   // Check if the list is empty before accessing list[0]
                   GestureDetector(
-                    onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>SettingScreenUser()));
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SettingScreenUser()));
                     },
-                    child: Icon(Icons.more_vert,size: 35,
-                      color: colors.containerColor4,),
+                    child: Icon(
+                      Icons.more_vert,
+                      size: 35,
+                      color: colors.containerColor4,
+                    ),
                   )
                 ],
               ),
@@ -181,10 +190,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       switch (snapshot.connectionState) {
                         case ConnectionState.waiting:
                         case ConnectionState.none:
-                          return Center(child: CircularProgressIndicator(strokeWidth: 2));
+                          return Center(
+                              child: CircularProgressIndicator(strokeWidth: 2));
                         case ConnectionState.active:
                         case ConnectionState.done:
-                          var userIds = snapshot.data!.docs.map((e) => e.id).toList() ?? [];
+                          var userIds =
+                              snapshot.data!.docs.map((e) => e.id).toList() ??
+                                  [];
                           if (userIds.isEmpty) {
                             return Center(
                               child: Text(
@@ -199,44 +211,46 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                           }
                           return StreamBuilder(
-                            stream: APIs.getAllUnBlockUsers(snapshot.data?.docs.map((e) => e.id).toList() ?? []),
+                            stream: APIs.getAllUnBlockUsers(userIds),
                             builder: (context, snapshot) {
                               switch (snapshot.connectionState) {
-                              //if data is loading
                                 case ConnectionState.waiting:
                                 case ConnectionState.none:
-                                return const Center(
-                                    child: CircularProgressIndicator());
+                                  return Center(
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2));
 
-                                //if some or all data is loaded then show it
                                 case ConnectionState.active:
                                 case ConnectionState.done:
-                                  final data = snapshot.data?.docs;
-                                  list = data
-                                      ?.map((e) => ChatUserModel.fromJson(e.data()))
-                                      .toList() ??
-                                      [];
-
+                                  var list = snapshot.data!.docs
+                                      .map((doc) =>
+                                          ChatUserModel.fromJson(doc.data()))
+                                      .toList();
                                   if (list.isNotEmpty) {
                                     return ListView.builder(
-                                        itemCount: _isSearching
-                                            ? _search.length
-                                            : list.length,
-                                        padding: EdgeInsets.only(top: 10),
-                                        physics: const BouncingScrollPhysics(),
-                                        itemBuilder: (context, index) {
-                                          return ChatHome(
-                                              user: _isSearching
-                                                  ? _search[index]
-                                                  :list[index]);
-                                        });
+                                      shrinkWrap: true,
+                                      padding: EdgeInsets.only(top: 20.h),
+                                      itemCount: list.length,
+                                      physics: BouncingScrollPhysics(),
+                                      itemBuilder: (context, index) {
+                                        return ChatHome(user: list[index]);
+                                      },
+                                    );
                                   } else {
-                                    return const Center(
-                                      child: Text('No Connections Found!',
-                                          style: TextStyle(fontSize: 20)),
+                                    return Center(
+                                      child: Text(
+                                        "No Connection Found",
+                                        style: GoogleFonts.roboto(
+                                          textStyle: TextStyle(
+                                            fontSize: 18.sp,
+                                            color: colors.textColor2,
+                                          ),
+                                        ),
+                                      ),
                                     );
                                   }
                               }
+                              ;
                             },
                           );
                       }
@@ -250,323 +264,338 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _SettingScreen() {
-    return _isLoading? Center(child: CircularProgressIndicator(strokeWidth: 2,),): SingleChildScrollView(
-      child: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: Container(
-          height: MediaQuery.sizeOf(context).height,
-          padding: EdgeInsets.only(top: 60.h),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                colors.containerColor1,
-                colors.containerColor2,
-                colors.containerColor3,
-                colors.containerColor4,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+    return _isLoading
+        ? Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
             ),
-          ),
-          child: Column(
-            children: [
-              // Check if the list is empty before accessing list[0]
-              list.isNotEmpty
-                  ? Stack(children: [
-                      _image != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(90),
-                              child: Image.file(
-                                File(_image!),
-                                width: 170.w,
-                                height: 170.h,
-                                // fit: BoxFit.fill,
+          )
+        : SingleChildScrollView(
+            child: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: Container(
+                height: MediaQuery.sizeOf(context).height,
+                padding: EdgeInsets.only(top: 60.h),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      colors.containerColor1,
+                      colors.containerColor2,
+                      colors.containerColor3,
+                      colors.containerColor4,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Check if the list is empty before accessing list[0]
+                    list.isNotEmpty
+                        ? Stack(children: [
+                            _image != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(90),
+                                    child: Image.file(
+                                      File(_image!),
+                                      width: 170.w,
+                                      height: 170.h,
+                                      // fit: BoxFit.fill,
+                                    ),
+                                  )
+                                : ClipRRect(
+                                    borderRadius: BorderRadius.circular(90),
+                                    child: CachedNetworkImage(
+                                      height: 170.h,
+                                      width: 170.w,
+                                      fit: BoxFit.cover,
+                                      imageUrl: APIs.userData.image,
+                                      placeholder: (context, url) =>
+                                          CircularProgressIndicator(),
+                                      errorWidget: (context, url, error) =>
+                                          CircleAvatar(
+                                        child: Icon(Icons.person),
+                                      ),
+                                    ),
+                                  ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: MaterialButton(
+                                onPressed: () {
+                                  showModalBottomSheet(
+                                      context: context,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(30)),
+                                      builder: (context) {
+                                        return ListView(
+                                          shrinkWrap: true,
+                                          padding: EdgeInsets.only(
+                                              top: 20.h, bottom: 20.h),
+                                          children: [
+                                            Text(
+                                              "Pick Profile Picture",
+                                              textAlign: TextAlign.center,
+                                              style: GoogleFonts.roboto(
+                                                textStyle: TextStyle(
+                                                  fontSize: 24.sp,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: colors.textColor2,
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              height: 20.h,
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                ElevatedButton(
+                                                    onPressed: () async {
+                                                      final ImagePicker picker =
+                                                          ImagePicker();
+                                                      final XFile? image =
+                                                          await picker.pickImage(
+                                                              source:
+                                                                  ImageSource
+                                                                      .gallery);
+                                                      if (image != null) {
+                                                        setState(() {
+                                                          _image = image.path;
+                                                        });
+                                                        APIs.updateProfilePicture(
+                                                            File(_image!));
+                                                        Navigator.pop(context);
+                                                      }
+                                                    },
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                            fixedSize: Size(
+                                                                150.w, 150.h)),
+                                                    child: Image.asset(
+                                                        'assets/image.png')),
+                                                ElevatedButton(
+                                                    onPressed: () async {
+                                                      final ImagePicker picker =
+                                                          ImagePicker();
+                                                      final XFile? photo =
+                                                          await picker.pickImage(
+                                                              source:
+                                                                  ImageSource
+                                                                      .camera);
+                                                      if (photo != null) {
+                                                        setState(() {
+                                                          _image = photo.path;
+                                                        });
+                                                        APIs.updateProfilePicture(
+                                                            File(_image!));
+                                                        Navigator.pop(context);
+                                                      }
+                                                    },
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                            fixedSize: Size(
+                                                                150.w, 150.h)),
+                                                    child: Image.asset(
+                                                        'assets/camera.png'))
+                                              ],
+                                            )
+                                          ],
+                                        );
+                                      });
+                                },
+                                shape: CircleBorder(),
+                                color: colors.textColor,
+                                child: Icon(
+                                  Icons.edit,
+                                  color: colors.containerColor4,
+                                ),
                               ),
                             )
-                          : ClipRRect(
-                              borderRadius: BorderRadius.circular(90),
-                              child: CachedNetworkImage(
-                                height: 170.h,
-                                width: 170.w,
-                                fit: BoxFit.cover,
-                                imageUrl: APIs.userData.image,
-                                placeholder: (context, url) =>
-                                    CircularProgressIndicator(),
-                                errorWidget: (context, url, error) =>
-                                    CircleAvatar(
-                                  child: Icon(Icons.person),
+                          ])
+                        : Container(
+                            height: 170.h,
+                            width: 170.w,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(50)),
+                            child: CircleAvatar(
+                              child: Icon(
+                                Icons.person,
+                                size: 90,
+                              ),
+                            ),
+                          ),
+
+                    Form(
+                      key: _formKey,
+                      child: Container(
+                        margin: EdgeInsets.only(top: 30.h),
+                        padding:
+                            EdgeInsets.only(top: 35.h, left: 20.h, right: 20.h),
+                        height: MediaQuery.sizeOf(context).height - 327.h,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(30),
+                          ),
+                          color: colors.textColor,
+                        ),
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              initialValue: APIs.userData.name,
+                              onSaved: (val) => APIs.userData.name = val ?? "",
+                              validator: (val) => val != null || val!.isNotEmpty
+                                  ? null
+                                  : "Name Required",
+                              decoration: InputDecoration(
+                                labelText: 'Display Name',
+                                prefixIcon: Icon(
+                                  Icons.person,
+                                  color: colors.containerColor4,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
                                 ),
                               ),
                             ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: MaterialButton(
-                          onPressed: () {
-                            showModalBottomSheet(
-                                context: context,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30)),
-                                builder: (context) {
-                                  return ListView(
-                                    shrinkWrap: true,
-                                    padding:
-                                    EdgeInsets.only(top: 20.h, bottom: 20.h),
-                                    children: [
-                                      Text(
-                                        "Pick Profile Picture",
-                                        textAlign: TextAlign.center,
-                                        style: GoogleFonts.roboto(
-                                          textStyle: TextStyle(
-                                            fontSize: 24.sp,
-                                            fontWeight: FontWeight.bold,
-                                            color: colors.textColor2,
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: 20.h,
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          ElevatedButton(
-                                              onPressed: () async {
-                                                final ImagePicker picker =
-                                                ImagePicker();
-                                                final XFile? image =
-                                                await picker.pickImage(
-                                                    source:
-                                                    ImageSource.gallery);
-                                                if (image != null) {
-                                                  setState(() {
-                                                    _image = image.path;
-                                                  });
-                                                  APIs.updateProfilePicture(
-                                                      File(_image!));
-                                                  Navigator.pop(context);
-                                                }
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                  fixedSize: Size(150.w, 150.h)),
-                                              child: Image.asset(
-                                                  'assets/image.png')),
-                                          ElevatedButton(
-                                              onPressed: () async {
-                                                final ImagePicker picker =
-                                                ImagePicker();
-                                                final XFile? photo =
-                                                await picker.pickImage(
-                                                    source:
-                                                    ImageSource.camera);
-                                                if (photo != null) {
-                                                  setState(() {
-                                                    _image = photo.path;
-                                                  });
-                                                  APIs.updateProfilePicture(
-                                                      File(_image!));
-                                                  Navigator.pop(context);
-                                                }
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                  fixedSize: Size(150.w, 150.h)),
-                                              child: Image.asset(
-                                                  'assets/camera.png'))
-                                        ],
-                                      )
-                                    ],
+                            SizedBox(
+                              height: 30.h,
+                            ),
+                            TextFormField(
+                              initialValue: APIs.userData.email,
+                              onSaved: (val) => APIs.userData.email = val ?? "",
+                              validator: (val) => val != null || val!.isNotEmpty
+                                  ? null
+                                  : "Email Required",
+                              decoration: InputDecoration(
+                                labelText: 'Email',
+                                prefixIcon: Icon(
+                                  Icons.mail_outline,
+                                  color: colors.containerColor4,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 30.h,
+                            ),
+                            TextFormField(
+                              initialValue: APIs.userData.lastMessage,
+                              onSaved: (val) =>
+                                  APIs.userData.lastMessage = val ?? "",
+                              validator: (val) => val != null || val!.isNotEmpty
+                                  ? null
+                                  : "Field Required",
+                              decoration: InputDecoration(
+                                labelText: 'About',
+                                prefixIcon: Icon(
+                                  Icons.info_outline,
+                                  color: colors.containerColor4,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 30.h,
+                            ),
+                            TextFormField(
+                              initialValue: APIs.userData.createdAt,
+                              decoration: InputDecoration(
+                                labelText: 'CreatedAt',
+                                prefixIcon: Icon(
+                                  Icons.phone,
+                                  color: colors.containerColor4,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 30.h,
+                            ),
+                            ElevatedButton.icon(
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    _formKey.currentState?.save();
+                                    APIs.updateUserInfo().then(
+                                      (value) => Messages.showSnackbar(context,
+                                          'Profile Updated Successfully'),
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colors.containerColor4,
+                                ),
+                                icon: Icon(
+                                  Icons.edit,
+                                  color: colors.textColor,
+                                ),
+                                label: Text(
+                                  "Update",
+                                  style: GoogleFonts.roboto(
+                                    textStyle: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: colors.textColor,
+                                    ),
+                                  ),
+                                )),
+                            SizedBox(
+                              height: 20.h,
+                            ),
+                            ElevatedButton.icon(
+                                onPressed: () async {
+                                  Messages.showProgressbar(context);
+                                  APIs.updateActiveStatus(false);
+                                  await APIs.auth.signOut().then(
+                                    (value) async {
+                                      await GoogleSignIn().signOut().then(
+                                        (value) {
+                                          // Navigator.pop(context);
+                                          Navigator.pop(context);
+                                          APIs.auth = FirebaseAuth.instance;
+                                          Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      SplashTwoScreen()));
+                                        },
+                                      );
+                                    },
                                   );
-                                });
-                          },
-
-                          shape: CircleBorder(),
-                          color: colors.textColor,
-                          child: Icon(
-                            Icons.edit,
-                            color: colors.containerColor4,
-                          ),
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                ),
+                                icon: Icon(
+                                  Icons.exit_to_app_outlined,
+                                  color: colors.textColor,
+                                ),
+                                label: Text(
+                                  "LogOut",
+                                  style: GoogleFonts.roboto(
+                                    textStyle: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: colors.textColor,
+                                    ),
+                                  ),
+                                )),
+                          ],
                         ),
-                      )
-                    ])
-                  :
-                    Container(
-                    height: 170.h,
-                    width: 170.w,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50)
+                      ),
                     ),
-                    child: CircleAvatar(
-                        child: Icon(Icons.person,size: 90,),
-                      ),
-                  ),
-
-              Form(
-                key: _formKey,
-                child: Container(
-                  margin: EdgeInsets.only(top: 30.h),
-                  padding: EdgeInsets.only(top: 35.h, left: 20.h, right: 20.h),
-                  height: MediaQuery.sizeOf(context).height - 327.h,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                    ),
-                    color: colors.textColor,
-                  ),
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        initialValue: APIs.userData.name,
-                        onSaved: (val) => APIs.userData.name = val ?? "",
-                        validator: (val) => val != null || val!.isNotEmpty
-                            ? null
-                            : "Name Required",
-                        decoration: InputDecoration(
-                          labelText: 'Display Name',
-                          prefixIcon: Icon(
-                            Icons.person,
-                            color: colors.containerColor4,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 30.h,
-                      ),
-                      TextFormField(
-                        initialValue: APIs.userData.email,
-                        onSaved: (val) => APIs.userData.email = val ?? "",
-                        validator: (val) => val != null || val!.isNotEmpty
-                            ? null
-                            : "Email Required",
-                        decoration: InputDecoration(
-                          labelText: 'Email',
-                          prefixIcon: Icon(
-                            Icons.mail_outline,
-                            color: colors.containerColor4,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 30.h,
-                      ),
-                      TextFormField(
-                        initialValue: APIs.userData.lastMessage,
-                        onSaved: (val) => APIs.userData.lastMessage = val ?? "",
-                        validator: (val) => val != null || val!.isNotEmpty
-                            ? null
-                            : "Field Required",
-                        decoration: InputDecoration(
-                          labelText: 'About',
-                          prefixIcon: Icon(
-                            Icons.info_outline,
-                            color: colors.containerColor4,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 30.h,
-                      ),
-                      TextFormField(
-                        initialValue: APIs.userData.createdAt,
-                        decoration: InputDecoration(
-                          labelText: 'CreatedAt',
-                          prefixIcon: Icon(
-                            Icons.phone,
-                            color: colors.containerColor4,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 30.h,
-                      ),
-                      ElevatedButton.icon(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              _formKey.currentState?.save();
-                              APIs.updateUserInfo().then(
-                                (value) => Messages.showSnackbar(
-                                    context, 'Profile Updated Successfully'),
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colors.containerColor4,
-                          ),
-                          icon: Icon(
-                            Icons.edit,
-                            color: colors.textColor,
-                          ),
-                          label: Text(
-                            "Update",
-                            style: GoogleFonts.roboto(
-                              textStyle: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: colors.textColor,
-                              ),
-                            ),
-                          )),
-                      SizedBox(
-                        height: 20.h,
-                      ),
-                      ElevatedButton.icon(
-                          onPressed: () async {
-                            Messages.showProgressbar(context);
-                            APIs.updateActiveStatus(false);
-                            await APIs.auth.signOut().then(
-                              (value) async {
-                                await GoogleSignIn().signOut().then(
-                                  (value) {
-                                    // Navigator.pop(context);
-                                    Navigator.pop(context);
-                                    APIs.auth = FirebaseAuth.instance;
-                                    Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                SplashTwoScreen()));
-                                  },
-                                );
-                              },
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                          ),
-                          icon: Icon(
-                            Icons.exit_to_app_outlined,
-                            color: colors.textColor,
-                          ),
-                          label: Text(
-                            "LogOut",
-                            style: GoogleFonts.roboto(
-                              textStyle: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: colors.textColor,
-                              ),
-                            ),
-                          )),
-                    ],
-                  ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
+            ),
+          );
   }
 
   @override
@@ -710,4 +739,3 @@ class _HomeScreenState extends State<HomeScreen> {
             ));
   }
 }
-

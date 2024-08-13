@@ -6,8 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http; // Add this for internet checking
 import 'package:whisper/Screens/home/home_Screen.dart';
-import 'package:whisper/Screens/login_screen.dart';
-import 'package:whisper/Screens/signup_Screen.dart';
 import '../Colors/colors.dart';
 import '../api/apis.dart';
 import '../messenger/messages.dart';
@@ -51,9 +49,11 @@ class _SplashTwoScreenState extends State<SplashTwoScreen> with SingleTickerProv
     _animation5 = Tween<double>(begin: -200, end: 0).animate(
       CurvedAnimation(parent: _controller, curve: Interval(0.25, 1.0, curve: Curves.bounceOut)),
     );
+
     _animation6 = Tween<double>(begin: -200, end: 0).animate(
-      CurvedAnimation(parent: _controller, curve: Interval(0.1, 1.0, curve: Curves.bounceOut)),
+      CurvedAnimation(parent: _controller, curve: Interval(0.10, 1.0, curve: Curves.bounceOut)),
     );
+
 
     Future.delayed(Duration.zero, () {
       _controller.forward();
@@ -179,13 +179,13 @@ class _SplashTwoScreenState extends State<SplashTwoScreen> with SingleTickerProv
                 "Our chat app is the perfect way to stay connected with friends and family.",
                 style: GoogleFonts.roboto(
                   textStyle: TextStyle(
-                    fontSize: 18.sp,
+                    fontSize: 17.sp,
                     color: colors.textColor,
                   ),
                 ),
               ),
             ),
-            SizedBox(height: 50.h),
+            SizedBox(height: 20.h),
             AnimatedBuilder(
               animation: _animation3,
               builder: (context, child) {
@@ -194,14 +194,34 @@ class _SplashTwoScreenState extends State<SplashTwoScreen> with SingleTickerProv
                   child: child,
                 );
               },
-              child: _buildSocialIcons(),
+              child: Text(
+                "Continue with:",
+                style: GoogleFonts.roboto(
+                  textStyle: TextStyle(
+                    fontSize: 23.sp,
+                    fontWeight: FontWeight.bold,
+                    color: colors.textColor,
+                  ),
+                ),
+              ),
             ),
-            SizedBox(height: 25.h),
+            SizedBox(height: 20.h),
             AnimatedBuilder(
               animation: _animation4,
               builder: (context, child) {
                 return Transform.translate(
                   offset: Offset(0, _animation4.value),
+                  child: child,
+                );
+              },
+              child: _buildSocialIcons(),
+            ),
+            SizedBox(height: 25.h),
+            AnimatedBuilder(
+              animation: _animation5,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(0, _animation5.value),
                   child: child,
                 );
               },
@@ -217,17 +237,7 @@ class _SplashTwoScreenState extends State<SplashTwoScreen> with SingleTickerProv
               ),
             ),
             SizedBox(height: 30.h),
-            AnimatedBuilder(
-              animation: _animation5,
-              builder: (context, child) {
-                return Transform.translate(
-                  offset: Offset(0, _animation5.value),
-                  child: child,
-                );
-              },
-              child: _buildSignUpButton(),
-            ),
-            SizedBox(height: 50.h),
+
             AnimatedBuilder(
                 animation: _animation6,
                 builder: (context, child) {
@@ -236,7 +246,7 @@ class _SplashTwoScreenState extends State<SplashTwoScreen> with SingleTickerProv
                     child: child,
                   );
                 },
-                child: _buildLoginText()),
+                child: _buildSocialIcon1()),
           ],
         ),
       ),
@@ -247,9 +257,18 @@ class _SplashTwoScreenState extends State<SplashTwoScreen> with SingleTickerProv
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildSocialIcon("assets/facebook.png"),
+
         _buildSocialIcon("assets/google.png"),
-        _buildSocialIcon("assets/social.png"),
+        // _buildSocialIcon("assets/facebook.png")
+      ],
+    );
+  }
+
+  Widget _buildSocialIcon1() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildSocialIcon("assets/facebook.png"),
       ],
     );
   }
@@ -273,67 +292,5 @@ class _SplashTwoScreenState extends State<SplashTwoScreen> with SingleTickerProv
     );
   }
 
-  Widget _buildSignUpButton() {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const SignupScreen()),
-        );
-      },
-      child: Container(
-        height: 50.h,
-        width: 330.w,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade400.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Center(
-          child: Text(
-            "Sign Up With email",
-            style: GoogleFonts.roboto(
-              textStyle: TextStyle(
-                fontSize: 15.sp,
-                color: colors.textColor,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
-  Widget _buildLoginText() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          "Already have an account? ",
-          style: GoogleFonts.roboto(
-            textStyle: TextStyle(
-              fontSize: 15.sp,
-              color: colors.textColor,
-            ),
-          ),
-        ),
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginScreen()),
-            );
-          },
-          child: Text(
-            'Login',
-            style: GoogleFonts.roboto(
-              textStyle: TextStyle(
-                fontSize: 15.sp,
-                color: Colors.blue,
-              ),
-            ),
-          ),
-        )
-      ],
-    );
-  }
 }

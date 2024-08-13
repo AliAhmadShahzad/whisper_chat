@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,9 +22,11 @@ class MessagesDisplayScreen extends StatefulWidget {
     super.key,
     required this.messages,
     required this.wordEffects,
+    required this.theme,
   });
   final MessagesModel messages;
   final List<WordEffectModels> wordEffects;
+  final String theme;
 
   @override
   State<MessagesDisplayScreen> createState() => _MessagesDisplayScreenState();
@@ -111,6 +114,7 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
   }
 
   _myMessage() {
+    print('theme is theme: ${widget.theme}');
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -121,7 +125,8 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
           FormatTime.getFormatedTime(
               context: context, time: widget.messages.sent),
           style: GoogleFonts.roboto(
-            textStyle: TextStyle(fontSize: 15.sp, color: colors.textColor2),
+            textStyle: TextStyle(fontSize: 15.sp, color: widget.theme == 'assets/image7.png'? Color(0xff0e3433
+            ): colors.textColor),
           ),
         ),
         SizedBox(width: 10.w),
@@ -141,7 +146,8 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
             decoration: BoxDecoration(
                 color: emojiRegExp.hasMatch(widget.messages.msg.replaceAll(RegExp(r'\s+'), ''))
                     ? null
-                    : const Color(0xff5061a0),
+                    : widget.theme == 'assets/image7.png'?
+                Colors.red.shade300: Color(0xff5061a0),
                 borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(17),
                     topRight: Radius.circular(17),
@@ -158,7 +164,8 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
                 }
               },
               onLongPress: () {
-                _showBottomDialog(context, colors.textColor2);
+                // print('state is mounted: $mounted');
+                _showBottomDialog(context, colors.textColor2,);
               },
               child: emojiRegExp.hasMatch(widget.messages.msg.replaceAll(RegExp(r'\s+'), ''))
                   ? Text(
@@ -176,7 +183,7 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
                 style: GoogleFonts.roboto(
                   textStyle: TextStyle(
                     fontSize: 17.sp,
-                    color: colors.textColor,
+                    color: widget.theme == 'assets/image7.png'?colors.textColor: colors.textColor,
                   ),
                 ),
               )
@@ -204,6 +211,7 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
   _otherMessages() {
     if (widget.messages.read.isEmpty) {
       APIs.updateMessageStatus(widget.messages);
+      print('read Successfully');
     }
     return Stack(
       children: [
@@ -237,7 +245,8 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
                     }
                   },
                   onLongPress: () {
-                    _showBottomDialog(context, colors.textColor2);
+                    _showBottomDialog(context, colors.textColor2,);
+
                   },
                   child: emojiRegExp.hasMatch(widget.messages.msg)
                       ? Text(
@@ -365,118 +374,146 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
   }
 
   _showBottomDialog(BuildContext context, Color color) {
-    return showModalBottomSheet(
+    showModalBottomSheet(
         context: context,
-        shape: RoundedRectangleBorder(
-          borderRadius:  BorderRadius.circular(10),
-        ),
-        builder: (_){
-      return Container(
-        height: 100.h,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Column(
-              children: [
-                IconButton(
-                    onPressed: (){
-                      if(widget.messages.type==Type.text){
-                        FlutterClipboard.copy(widget.messages.msg).then((onValue)=>Messages.showSnackbar(context,'Copied Successfully'));
-                        Navigator.pop(context);
-                      }else{
-                        GallerySaver.saveImage(widget.messages.msg,albumName: 'whisper').then((onValue)=>Messages.showSnackbar(context,'Image saved to Gallery'));
-                        Navigator.pop(context);
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20), topRight: Radius.circular(20))),
+        builder: (_) {
+          return ListView(
+            shrinkWrap: true,
+            children: [
+              //black divider
+              Container(
+                height: 4,
+                margin: EdgeInsets.symmetric(
+                    vertical: 20.h, horizontal:30.w),
+                decoration: const BoxDecoration(
+                    color: Colors.grey,
+                    borderRadius: BorderRadius.all(Radius.circular(8))),
+              ),
 
-                      }
-                    },
-                    icon: widget.messages.type==Type.text? Icon(Icons.copy,size: 35,color: colors.containerColor2,):
-                    Icon(Icons.save_alt,size: 35,color: colors.containerColor2,)),
-                widget.messages.type== Type.text? Text('Copy',style: GoogleFonts.roboto(
-                  textStyle: TextStyle(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                    color: colors.textColor2,
-                  ),
-                ), ) :
-
-                Text('Save',style: GoogleFonts.roboto(
-                  textStyle: TextStyle(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                    color: colors.textColor2,
-                  ),
-                ), )
-              ],
-            ),
-            Column(
-              children: [
-                IconButton(
-                    onPressed: (){
-                      if(APIs.users.uid==widget.messages.fromid) {
-                        APIs.pinMessage(widget.messages.toid, widget.messages.msg)
-                            .then((onValue) =>
-                            Messages.showSnackbar(
-                                context, 'Pined Successfully'));
-                        Navigator.pop(context);
-                      }
-                      else{
-                        APIs.pinMessage(widget.messages.fromid, widget.messages.msg)
-                            .then((onValue) =>
-                            Messages.showSnackbar(
-                                context, 'Pined Successfully'));
-                        Navigator.pop(context);
-                      }
-                    },
-                    icon: Icon(Icons.push_pin_outlined, size: 35,color: colors.containerColor2,)
-                    ),
-                Text('Pin',style: GoogleFonts.roboto(
-                  textStyle: TextStyle(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                    color: colors.textColor2,
-                  ),
-                ), )
-              ],
-            ),
-            Column(
-              children: [
-                IconButton(
-                    onPressed: (){
+              widget.messages.type == Type.text
+                  ?
+              //copy option
+              _OptionItem(
+                  icon: const Icon(Icons.copy_all_rounded,
+                      color: Colors.blue, size: 26),
+                  name: 'Copy Text',
+                  onTap: () async {
+                    await Clipboard.setData(
+                        ClipboardData(text: widget.messages.msg))
+                        .then((value) {
+                      //for hiding bottom sheet
                       Navigator.pop(context);
+
+                      Messages.showSnackbar(context, 'Text Copied!');
+                    });
+                  })
+                  :
+              //save option
+              _OptionItem(
+                  icon: const Icon(Icons.download_rounded,
+                      color: Colors.blue, size: 26),
+                  name: 'Save Image',
+                  onTap: () async {
+                    try {
+                      await GallerySaver.saveImage(widget.messages.msg,
+                          albumName: 'Whisper')
+                          .then((success) {
+                        //for hiding bottom sheet
+                        Navigator.pop(context);
+                        if (success != null && success) {
+                          Messages.showSnackbar(
+                              context, 'Image Successfully Saved!');
+                        }
+                      });
+                    } catch (e) {
+                      print('error $e');
+                    }
+                  }),
+
+              _OptionItem(
+                  icon: const Icon(Icons.push_pin_outlined,
+                      color: Colors.blue, size: 26),
+                  name: 'Pin Message',
+                onTap: (){
+                  if(APIs.users.uid==widget.messages.fromid) {
+                    print('pinning message....');
+                    APIs.pinMessage(widget.messages.toid, widget.messages.msg)
+                        .then((onValue) =>
+                        Messages.showSnackbar(
+                            context, 'Pined Successfully'));
+                    Navigator.pop(context);
+                  }
+                  else{
+                    print('pinning message2....');
+                    APIs.pinMessage(widget.messages.fromid, widget.messages.msg)
+                        .then((onValue) =>
+                        Messages.showSnackbar(
+                            context, 'Pined Successfully'));
+                    Navigator.pop(context);
+                  }
+                },
+
+                  ),
+              //separator or divider
+                Divider(
+                  color: Colors.black54,
+                  endIndent: 10,
+                  indent: 10,
+                ),
+
+              //edit option
+              if (widget.messages.type == Type.text )
+                _OptionItem(
+                    icon: const Icon(Icons.edit, color: Colors.blue, size: 26),
+                    name: 'Edit Message',
+                    onTap: () {
+                      //for hiding bottom sheet
+                      // Navigator.pop(context);
+
                       _showMessageUpdateDialog();
-                    },
-                    icon:Icon(Icons.edit,size: 35,color: colors.containerColor2,)),
-                Text('Edit',style: GoogleFonts.roboto(
-                  textStyle: TextStyle(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                    color: colors.textColor2,
-                  ),
-                ), )
-              ],
-            ),
-            Column(
-              children: [
-                IconButton(
-                    onPressed: (){
-                      Navigator.pop(context);
-                      _showMoreDialog();
+                    }),
 
-                    },
-                    icon:  Icon(Icons.menu,size: 35,color: colors.containerColor2,)),
-                Text('More',style: GoogleFonts.roboto(
-                  textStyle: TextStyle(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                    color: colors.textColor2,
-                  ),
-                ), )
-              ],
-            ),
-          ],
-        ),
-      );
-    });
+              //delete option
+                _OptionItem(
+                    icon: const Icon(Icons.delete_forever,
+                        color: Colors.red, size: 26),
+                    name: 'Delete Message',
+                    onTap: () async {
+
+                      await APIs.deleteMessage(widget.messages).then((value) {
+                        //for hiding bottom sheet
+                        Navigator.pop(context);
+                      });
+                    }),
+
+              //separator or divider
+              Divider(
+                color: Colors.black54,
+                endIndent: 10,
+                indent: 10,
+              ),
+
+              //sent time
+              _OptionItem(
+                  icon: const Icon(Icons.remove_red_eye, color: Colors.blue),
+                  name:
+                  'Sent At: ${FormatTime.getLastMessageTime(context: context, time: widget.messages.sent)}',
+                  onTap: () {
+                  }),
+
+              //read time
+              _OptionItem(
+                  icon: const Icon(Icons.remove_red_eye, color: Colors.green),
+                  name: widget.messages.read.isEmpty
+                      ? 'Read At: Not seen yet'
+                      : 'Read At: ${FormatTime.getLastMessageTime(context: context, time: widget.messages.read)}',
+                  onTap: () {}),
+            ],
+          );
+        });
   }
 
   void _showMessageUpdateDialog() {
@@ -500,12 +537,12 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
                 size: 30,
               ),
               Text(' Update Message',style: GoogleFonts.roboto(
-              textStyle: TextStyle(
-                fontSize: 19.sp,
-                fontWeight: FontWeight.bold,
-                color: colors.textColor2,
-              ),
-        ),)
+                textStyle: TextStyle(
+                  fontSize: 19.sp,
+                  fontWeight: FontWeight.bold,
+                  color: colors.textColor2,
+                ),
+              ),)
             ],
           ),
 
@@ -530,12 +567,12 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
                 },
                 child:  Text(
                   'Cancel'
-                ,style: GoogleFonts.roboto(
-                textStyle: TextStyle(
-                fontSize: 19.sp,
-                fontWeight: FontWeight.bold,
-                color: colors.textColor2,
-                ),
+                  ,style: GoogleFonts.roboto(
+                  textStyle: TextStyle(
+                    fontSize: 19.sp,
+                    fontWeight: FontWeight.bold,
+                    color: colors.textColor2,
+                  ),
                 ),
                 )),
 
@@ -548,13 +585,13 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
                 },
                 child:  Text(
                   'Update'
-    ,style: GoogleFonts.roboto(
-    textStyle: TextStyle(
-    fontSize: 19.sp,
-    fontWeight: FontWeight.bold,
-    color: colors.textColor2,
-    ),
-    ),
+                  ,style: GoogleFonts.roboto(
+                  textStyle: TextStyle(
+                    fontSize: 19.sp,
+                    fontWeight: FontWeight.bold,
+                    color: colors.textColor2,
+                  ),
+                ),
                 ))
           ],
         ));
@@ -616,19 +653,19 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
                             ),
                           ),),
                           content: TextButton.icon(
-                              onPressed: (){
-                                APIs.deleteMessage(widget.messages);
-                                Navigator.pop(context);
-                              },
+                            onPressed: (){
+                              APIs.deleteMessage(widget.messages);
+                              Navigator.pop(context);
+                            },
                             icon: Icon(Icons.delete,size: 30,),
 
-                              label: Text('Unsend for Everyone',style: GoogleFonts.roboto(
-                                textStyle: TextStyle(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: colors.containerColor1,
-                                ),
-                              ),),
+                            label: Text('Unsend for Everyone',style: GoogleFonts.roboto(
+                              textStyle: TextStyle(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.bold,
+                                color: colors.containerColor1,
+                              ),
+                            ),),
                           ),
                         ));
                   },
@@ -662,7 +699,6 @@ class _MessagesDisplayScreenState extends State<MessagesDisplayScreen>
 
         ));
   }
-
 
 }
 
@@ -700,4 +736,34 @@ class _AnimatedEffect {
           Random().nextDouble() * 400,
           -Random().nextDouble() * 100,
         );
+}
+
+class _OptionItem extends StatelessWidget {
+  final Icon icon;
+  final String name;
+  final VoidCallback onTap;
+
+  const _OptionItem(
+      {required this.icon, required this.name, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+        onTap: () => onTap(),
+        child: Padding(
+          padding: EdgeInsets.only(
+              left: 20.w,
+              top: 10.h,
+              bottom: 10.w),
+          child: Row(children: [
+            icon,
+            Flexible(
+                child: Text('    $name',
+                    style: const TextStyle(
+                        fontSize: 15,
+                        color: Colors.black54,
+                        letterSpacing: 0.5)))
+          ]),
+        ));
+  }
 }
